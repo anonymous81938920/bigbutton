@@ -33,7 +33,21 @@ const audioFiles = [
 ];
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const audioBuffers = [];
+const audioBuffers = new Array(audioFiles.length);
+let shuffledIndices = [];
+let currentIndex = 0;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function initializeAndShuffle() {
+  shuffledIndices = shuffle([...Array(audioFiles.length).keys()]);
+}
 
 function loadSound(url, index) {
   fetch(url)
@@ -48,16 +62,16 @@ audioFiles.forEach((file, index) => {
   loadSound(file, index);
 });
 
-let lastPlayedIndex = -1;
+initializeAndShuffle();
 
 button.addEventListener("click", () => {
-  let randomIndex;
-  do {
-    randomIndex = Math.floor(Math.random() * audioBuffers.length);
-  } while (randomIndex === lastPlayedIndex);
+  if (currentIndex >= shuffledIndices.length) {
+    initializeAndShuffle();
+    currentIndex = 0;
+  }
 
-  lastPlayedIndex = randomIndex;
-  const buffer = audioBuffers[randomIndex];
+  const audioIndex = shuffledIndices[currentIndex];
+  const buffer = audioBuffers[audioIndex];
 
   if (buffer) {
     const source = audioContext.createBufferSource();
@@ -65,4 +79,6 @@ button.addEventListener("click", () => {
     source.connect(audioContext.destination);
     source.start(0);
   }
+
+  currentIndex++;
 });

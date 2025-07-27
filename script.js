@@ -7,8 +7,30 @@ const audioFiles = [
     'assets/4.mp3'
 ];
 
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const audioBuffers = [];
+
+function loadSound(url, index) {
+    fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(data => audioContext.decodeAudioData(data))
+        .then(buffer => {
+            audioBuffers[index] = buffer;
+        });
+}
+
+audioFiles.forEach((file, index) => {
+    loadSound(file, index);
+});
+
 button.addEventListener('click', () => {
-    const randomIndex = Math.floor(Math.random() * audioFiles.length);
-    const audio = new Audio(audioFiles[randomIndex]);
-    audio.play();
+    const randomIndex = Math.floor(Math.random() * audioBuffers.length);
+    const buffer = audioBuffers[randomIndex];
+
+    if (buffer) {
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+    }
 });

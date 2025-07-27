@@ -23,8 +23,15 @@ audioFiles.forEach((file, index) => {
     loadSound(file, index);
 });
 
+let lastPlayedIndex = -1;
+
 button.addEventListener('click', () => {
-    const randomIndex = Math.floor(Math.random() * audioBuffers.length);
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * audioBuffers.length);
+    } while (randomIndex === lastPlayedIndex);
+
+    lastPlayedIndex = randomIndex;
     const buffer = audioBuffers[randomIndex];
 
     if (buffer) {
